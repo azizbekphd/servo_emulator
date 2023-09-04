@@ -7,7 +7,10 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.logger import Logger
 
+from config import Config
 from controllers.ports import PortsController
+from controllers.responses import ResponsesController, \
+        ResponsesControllerState
 from utils.ports_list import PortsList
 from i18n.i18n import I18n
 
@@ -22,28 +25,41 @@ Builder.load_string('''
         orientation: 'vertical'
 ''')
 
+
 class LogsWidget(RecycleView):
     def __init__(self, **kwargs):
         super(LogsWidget, self).__init__(**kwargs)
         self.data = []
+
 
 class LogRow(Label):
     def __init__(self, **kwargs):
         super(LogRow, self).__init__(**kwargs)
         self.halign = 'left'
 
+
 class MainScreen:
 
     ports = PortsController()
+    responses = ResponsesController(ResponsesControllerState(
+        Config.REQUEST_RESPONSE_PAIRS))
     layout = GridLayout(padding=10)
 
+    def __program_mode_menu_on_release(self, program_mode):
+        self.__program_mode_menu_button.text = program_mode.name if (
+                program_mode) else "Please, choose..."
+        self.ports.select_program_mode(program_mode)
+        return True
+
     def __input_serial_menu_on_release(self, port):
-        self.__input_serial_menu_button.text = port.name if port else "Please, choose..."
+        self.__input_serial_menu_button.text = port.name if (
+                port) else "Please, choose..."
         self.ports.select_input_port(port)
         return True
 
     def __output_serial_menu_on_release(self, port):
-        self.__output_serial_menu_button.text = port.name if port else "Please, choose..."
+        self.__output_serial_menu_button.text = port.name if (
+                port) else "Please, choose..."
         self.ports.select_output_port(port)
         return True
 
@@ -60,6 +76,31 @@ class MainScreen:
         self.ports.run()
         ports_available = self.ports.ports_available()
         ports_list = self.ports.state.ports if (ports_available) else []
+
+        # Program mode
+        ports_control_grid.add_widget(Label(text="Program mode:"))
+        button_text = self.ports.state.program_mode.name if (
+                self.ports.state.program_mode) else "Please, choose..."
+        self.__program_mode_menu_button = Button(
+                text=button_text, size_hint_max_y=35)
+        self.__program_mode_menu = DropDown()
+
+        for program_mode in self.ports.state.program_modes:
+            program_mode_menu_button = Button(
+                    text=program_mode.name, size_hint_y=None, height=30)
+            program_mode_menu_button.bind(
+                    on_release=lambda btn: self.__program_mode_menu.select(
+                        next((mode for mode in
+                              self.ports.state.program_modes if
+                              mode.name == btn.text))))
+            self.__program_mode_menu.add_widget(program_mode_menu_button)
+
+        self.__program_mode_menu_button.bind(
+                on_release=self.__program_mode_menu.open)
+        self.__program_mode_menu.bind(
+                on_select=lambda _, mode:
+                self.__program_mode_menu_on_release(mode))
+        ports_control_grid.add_widget(self.__program_mode_menu_button)
 
         # Input port
         button_text = self.ports.state.input_port.name if (
@@ -80,36 +121,38 @@ class MainScreen:
 
                 # Input port
                 input_menu_button = Button(text=port.name,
-                                size_hint_y=None, height=30)
+                                           size_hint_y=None, height=30)
                 input_menu_button.bind(on_release=lambda btn:
-                                 self.__input_serial_menu.select(
-                                    PortsList.find_port_by_name(
-                                        ports_list, btn.text)))
+                                       self.__input_serial_menu.select(
+                                           PortsList.find_port_by_name(
+                                               ports_list, btn.text)))
                 self.__input_serial_menu.add_widget(input_menu_button)
 
                 # Output port
                 output_menu_button = Button(text=port.name,
-                                     size_hint_y=None, height=30)
+                                            size_hint_y=None, height=30)
                 output_menu_button.bind(on_release=lambda btn:
-                                 self.__output_serial_menu.select(
-                                    PortsList.find_port_by_name(
-                                        ports_list, btn.text)))
+                                        self.__output_serial_menu.select(
+                                            PortsList.find_port_by_name(
+                                                ports_list, btn.text)))
                 self.__output_serial_menu.add_widget(output_menu_button)
 
         # Input port
         ports_control_grid.add_widget(Label(text="Input COM Port:"))
-        self.__input_serial_menu_button.bind(on_release=
-                                             self.__input_serial_menu.open)
-        self.__input_serial_menu.bind(on_select=lambda _, port:
-                             self.__input_serial_menu_on_release(port))
+        self.__input_serial_menu_button.bind(
+                on_release=self.__input_serial_menu.open)
+        self.__input_serial_menu.bind(
+                on_select=lambda _, port:
+                self.__input_serial_menu_on_release(port))
         ports_control_grid.add_widget(self.__input_serial_menu_button)
 
         # Output port
         ports_control_grid.add_widget(Label(text="Output COM Port:"))
-        self.__output_serial_menu_button.bind(on_release=
-                                             self.__output_serial_menu.open)
-        self.__output_serial_menu.bind(on_select=lambda _, port:
-                             self.__output_serial_menu_on_release(port))
+        self.__output_serial_menu_button.bind(
+                on_release=self.__output_serial_menu.open)
+        self.__output_serial_menu.bind(
+                on_select=lambda _, port:
+                self.__output_serial_menu_on_release(port))
         ports_control_grid.add_widget(self.__output_serial_menu_button)
 
         self.layout.add_widget(ports_control_grid)
@@ -122,8 +165,8 @@ class MainScreen:
         if (not t):
             return
         if (len(self.logs_widget.data) >= 99):
-            self.logs_widget.data.pop(0)
-        self.logs_widget.data.append({'text': str(t)})
-        self.logs_widget.scroll_y = 0
-        return True
-
+            del self.logs_widget.data[:len(t)]
+        for ti in t:
+            self.logs_widget.data.append({'text': str(ti)})
+            self.logs_widget.scroll_y = 0
+            return True
