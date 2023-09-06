@@ -1,6 +1,7 @@
 from utils.ports_list import PortsList
 from utils.serials_list import SerialsList
 from models.transmission import Transmission, TransmissionType
+from models.program_mode import ProgramModes
 from config import Config
 
 from kivy.storage.dictstore import DictStore
@@ -36,7 +37,8 @@ class PortsStoreKeys(Enum):
 
 class PortsController:
 
-    def __init__(self):
+    def __init__(self, responses_controller):
+        self.responses = responses_controller
         self.state = PortsControllerState()
         self.store = DictStore('settings')
         self.listen = True
@@ -56,7 +58,7 @@ class PortsController:
     def select_program_mode(self, program_mode):
         self.store.put(PortsStoreKeys.PROGRAM_MODE, value=program_mode.value)
         self.state.program_mode = program_mode
-        self.refresh()
+        Clock.schedule_once(lambda _: self.refresh(), Config.TIMEOUT)
 
     def select_input_port(self, port):
         self.store.put(PortsStoreKeys.INPUT_PORT, port=port.device)
@@ -123,23 +125,68 @@ class PortsController:
         return True
 
     def listener(self):
-        while (self.listen):
-            self.listener_callback()
+        if (self.state.program_mode.value == ProgramModes.EMULATOR):
+            self.emulator_callback()
+        elif (self.state.program_mode.value == ProgramModes.SNIFFER):
+            self.sniffer_callback()
 
-    def listener_callback(self):
-        rdata = self.state.input_serial.read_until(
-                expected=Config.CR, size=Config.INPUT_SIZE)
-        if (rdata):
+    def emulator_callback(self):
+        while (self.listen and
+               self.state.program_mode.value == ProgramModes.EMULATOR):
+            rdata = self.state.input_serial.read_until(
+                    expected=Config.CR, size=Config.INPUT_SIZE)
+            if (not rdata):
+                continue
             self.add_transmission(TransmissionType.READ,
                                   self.state.input_port.device, rdata)
-        return
+            wdata = self.responses.get_response(rdata)
+            self.state.output_serial.write(wdata)
+            self.add_transmission(TransmissionType.WRITE,
+                                  self.state.output_port.device, wdata)
 
-        wdata = Config.ACK
-        self.state.output_serial.write(wdata)
-        self.add_transmission(TransmissionType.WRITE,
-                              self.state.output_port.device, wdata)
-        self.listener()
-        return True
+    def sniffer_callback(self):
+        controller_port_thread = Thread(
+                target=self.sniffer_controller_listener, daemon=True)
+        slave_port_thread = Thread(
+                target=self.sniffer_slave_listener, daemon=True)
+        controller_port_thread.start()
+        slave_port_thread.start()
+
+    def sniffer_controller_listener(self):
+        while (self.listen and
+               self.state.program_mode.value == ProgramModes.SNIFFER):
+            rdata = self.state.input_serial.read_until(
+                    expected=Config.CR, size=Config.INPUT_SIZE)
+            if (not rdata):
+                continue
+            self.add_transmission(TransmissionType.READ,
+                                  self.state.input_port.device, rdata)
+
+            wdata = rdata
+            self.state.output_serial.write(wdata)
+            self.add_transmission(TransmissionType.WRITE,
+                                  self.state.output_port.device, wdata)
+
+            self.responses.state.sniffer_stack.append(rdata)
+
+    def sniffer_slave_listener(self):
+        while (self.listen and
+               self.state.program_mode.value == ProgramModes.SNIFFER):
+            rdata = self.state.output_serial.read()
+            if (not rdata):
+                continue
+            self.add_transmission(TransmissionType.READ,
+                                  self.state.output_port.device, rdata)
+
+            wdata = rdata
+            self.state.input_serial.write(wdata)
+            self.add_transmission(TransmissionType.WRITE,
+                                  self.state.input_port.device, wdata)
+
+            if (not self.responses.state.sniffer_stack):
+                continue
+            self.responses.set_pair(
+                    self.responses.state.sniffer_stack.pop(0), rdata)
 
     def add_transmission(self, ttype, port, data):
         t = Transmission.new(ttype, port, data)

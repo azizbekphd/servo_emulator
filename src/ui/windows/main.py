@@ -40,9 +40,9 @@ class LogRow(Label):
 
 class MainScreen:
 
-    ports = PortsController()
     responses = ResponsesController(ResponsesControllerState(
         Config.REQUEST_RESPONSE_PAIRS))
+    ports = PortsController(responses)
     layout = GridLayout(padding=10)
 
     def __program_mode_menu_on_release(self, program_mode):
@@ -73,6 +73,7 @@ class MainScreen:
         ports_control_grid.spacing = [0, 8]
         ports_control_grid.size_hint_max_y = 94
 
+        self.responses.run()
         self.ports.run()
         ports_available = self.ports.ports_available()
         ports_list = self.ports.state.ports if (ports_available) else []
@@ -169,4 +170,4 @@ class MainScreen:
         for ti in t:
             self.logs_widget.data.append({'text': str(ti)})
             self.logs_widget.scroll_y = 0
-            return True
+        return True

@@ -3,9 +3,11 @@ import datetime
 
 from utils.conversion import Conversion
 
+
 class TransmissionType(Enum):
     READ = "R"
     WRITE = "W"
+
 
 class Transmission:
 
@@ -20,12 +22,11 @@ class Transmission:
     @staticmethod
     def new(ttype, port, data):
         now = datetime.datetime.now()
-        data_string = ' '.join(Conversion.bytes_to_hex_string_list(data))
+        data_string = Conversion.bytes_to_hex_string(data)
         return Transmission(ttype, port, data_string,
-                             str(now.date()), str(now.time()))
+                            str(now.date()), str(now.time()))
 
     def __str__(self):
         direction = '<' if self.ttype == TransmissionType.READ else '>'
         return (f'[{self.date} {self.time}] {self.port} ' +
                 f'{direction} {self.data_string}')
-
