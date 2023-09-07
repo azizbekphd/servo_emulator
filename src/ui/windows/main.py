@@ -5,12 +5,11 @@ from kivy.uix.dropdown import DropDown
 from kivy.uix.recycleview import RecycleView
 from kivy.lang import Builder
 from kivy.clock import Clock
-from kivy.logger import Logger
 
 from config import Config
 from controllers.ports import PortsController
 from controllers.responses import ResponsesController, \
-        ResponsesControllerState
+    ResponsesControllerState
 from utils.ports_list import PortsList
 from i18n.i18n import I18n
 
@@ -47,19 +46,19 @@ class MainScreen:
 
     def __program_mode_menu_on_release(self, program_mode):
         self.__program_mode_menu_button.text = program_mode.name if (
-                program_mode) else "Please, choose..."
+            program_mode) else "Please, choose..."
         self.ports.select_program_mode(program_mode)
         return True
 
     def __input_serial_menu_on_release(self, port):
         self.__input_serial_menu_button.text = port.name if (
-                port) else "Please, choose..."
+            port) else "Please, choose..."
         self.ports.select_input_port(port)
         return True
 
     def __output_serial_menu_on_release(self, port):
         self.__output_serial_menu_button.text = port.name if (
-                port) else "Please, choose..."
+            port) else "Please, choose..."
         self.ports.select_output_port(port)
         return True
 
@@ -81,40 +80,40 @@ class MainScreen:
         # Program mode
         ports_control_grid.add_widget(Label(text="Program mode:"))
         button_text = self.ports.state.program_mode.name if (
-                self.ports.state.program_mode) else "Please, choose..."
+            self.ports.state.program_mode) else "Please, choose..."
         self.__program_mode_menu_button = Button(
-                text=button_text, size_hint_max_y=35)
+            text=button_text, size_hint_max_y=35)
         self.__program_mode_menu = DropDown()
 
         for program_mode in self.ports.state.program_modes:
             program_mode_menu_button = Button(
-                    text=program_mode.name, size_hint_y=None, height=30)
+                text=program_mode.name, size_hint_y=None, height=30)
             program_mode_menu_button.bind(
-                    on_release=lambda btn: self.__program_mode_menu.select(
-                        next((mode for mode in
-                              self.ports.state.program_modes if
-                              mode.name == btn.text))))
+                on_release=lambda btn: self.__program_mode_menu.select(
+                    next((mode for mode in
+                          self.ports.state.program_modes if
+                          mode.name == btn.text))))
             self.__program_mode_menu.add_widget(program_mode_menu_button)
 
         self.__program_mode_menu_button.bind(
-                on_release=self.__program_mode_menu.open)
+            on_release=self.__program_mode_menu.open)
         self.__program_mode_menu.bind(
-                on_select=lambda _, mode:
-                self.__program_mode_menu_on_release(mode))
+            on_select=lambda _, mode:
+            self.__program_mode_menu_on_release(mode))
         ports_control_grid.add_widget(self.__program_mode_menu_button)
 
         # Input port
         button_text = self.ports.state.input_port.name if (
-                self.ports.state.input_serial) else "Please, choose..."
+            self.ports.state.input_serial) else "Please, choose..."
         self.__input_serial_menu_button = Button(
-                text=button_text, size_hint_max_y=35)
+            text=button_text, size_hint_max_y=35)
         self.__input_serial_menu = DropDown()
 
         # Output port
         button_text = self.ports.state.output_port.name if (
-                self.ports.state.output_serial) else "Please, choose..."
+            self.ports.state.output_serial) else "Please, choose..."
         self.__output_serial_menu_button = Button(
-                text=button_text, size_hint_max_y=35)
+            text=button_text, size_hint_max_y=35)
         self.__output_serial_menu = DropDown()
 
         if (ports_available):
@@ -137,23 +136,26 @@ class MainScreen:
                                             PortsList.find_port_by_name(
                                                 ports_list, btn.text)))
                 self.__output_serial_menu.add_widget(output_menu_button)
+        else:
+            self.__input_serial_menu_button.text = "No COM ports found"
+            self.__output_serial_menu_button.text = "No COM ports found"
 
         # Input port
-        ports_control_grid.add_widget(Label(text="Input COM Port:"))
+        ports_control_grid.add_widget(Label(text="Input COM port:"))
         self.__input_serial_menu_button.bind(
-                on_release=self.__input_serial_menu.open)
+            on_release=self.__input_serial_menu.open)
         self.__input_serial_menu.bind(
-                on_select=lambda _, port:
-                self.__input_serial_menu_on_release(port))
+            on_select=lambda _, port:
+            self.__input_serial_menu_on_release(port))
         ports_control_grid.add_widget(self.__input_serial_menu_button)
 
         # Output port
-        ports_control_grid.add_widget(Label(text="Output COM Port:"))
+        ports_control_grid.add_widget(Label(text="Output COM port:"))
         self.__output_serial_menu_button.bind(
-                on_release=self.__output_serial_menu.open)
+            on_release=self.__output_serial_menu.open)
         self.__output_serial_menu.bind(
-                on_select=lambda _, port:
-                self.__output_serial_menu_on_release(port))
+            on_select=lambda _, port:
+            self.__output_serial_menu_on_release(port))
         ports_control_grid.add_widget(self.__output_serial_menu_button)
 
         self.layout.add_widget(ports_control_grid)

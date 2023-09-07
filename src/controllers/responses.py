@@ -1,6 +1,5 @@
 from openpyxl import load_workbook, Workbook
 import os
-from kivy.logger import Logger
 
 from utils.conversion import Conversion
 from config import Config
@@ -55,7 +54,7 @@ class ResponsesController:
         req_string = Conversion.bytes_to_hex_string(req)
 
         res = Conversion.hex_string_to_bytes(
-                self.state.request_response_pairs[req_string]) \
+            self.state.request_response_pairs[req_string]) \
             if req_string in self.state.request_response_pairs \
             else Config.ACK
         return res

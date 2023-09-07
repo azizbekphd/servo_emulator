@@ -6,7 +6,6 @@ from config import Config
 
 from kivy.storage.dictstore import DictStore
 from kivy.clock import Clock
-from kivy.logger import Logger
 from serial import Serial
 from enum import Enum
 from threading import Thread
@@ -81,31 +80,31 @@ class PortsController:
 
         if (self.store.exists(PortsStoreKeys.PROGRAM_MODE)):
             self.state.program_mode = next(
-                    (mode for mode in self.state.program_modes if mode.value ==
-                     self.store.get(PortsStoreKeys.PROGRAM_MODE)['value']),
-                    [None])
+                (mode for mode in self.state.program_modes if mode.value ==
+                 self.store.get(PortsStoreKeys.PROGRAM_MODE)['value']),
+                [None])
         if (self.store.exists(PortsStoreKeys.INPUT_PORT)):
             self.state.input_port = PortsList.find_port_by_address(
-                    self.state.ports,
-                    self.store.get(PortsStoreKeys.INPUT_PORT)['port'])
+                self.state.ports,
+                self.store.get(PortsStoreKeys.INPUT_PORT)['port'])
         if (self.store.exists(PortsStoreKeys.OUTPUT_PORT)):
             self.state.output_port = PortsList.find_port_by_address(
-                    self.state.ports,
-                    self.store.get(PortsStoreKeys.OUTPUT_PORT)['port'])
+                self.state.ports,
+                self.store.get(PortsStoreKeys.OUTPUT_PORT)['port'])
         return True
 
     def refresh_serials(self):
         if (self.state.input_port):
             self.state.input_serial = SerialsList.find_serial_by_port(
-                    self.state.serials,
-                    self.state.input_port.device)
+                self.state.serials,
+                self.state.input_port.device)
             if (not (self.state.input_serial
                      and self.state.input_serial.is_open)):
                 self.state.input_serial.open()
         if (self.state.output_port):
             self.state.output_serial = SerialsList.find_serial_by_port(
-                    self.state.serials,
-                    self.state.output_port.device)
+                self.state.serials,
+                self.state.output_port.device)
             if (not (self.state.output_serial
                      and self.state.output_serial.is_open)):
                 self.state.output_serial.open()
@@ -134,7 +133,7 @@ class PortsController:
         while (self.listen and
                self.state.program_mode.value == ProgramModes.EMULATOR):
             rdata = self.state.input_serial.read_until(
-                    expected=Config.CR, size=Config.INPUT_SIZE)
+                expected=Config.CR, size=Config.INPUT_SIZE)
             if (not rdata):
                 continue
             self.add_transmission(TransmissionType.READ,
@@ -146,9 +145,9 @@ class PortsController:
 
     def sniffer_callback(self):
         controller_port_thread = Thread(
-                target=self.sniffer_controller_listener, daemon=True)
+            target=self.sniffer_controller_listener, daemon=True)
         slave_port_thread = Thread(
-                target=self.sniffer_slave_listener, daemon=True)
+            target=self.sniffer_slave_listener, daemon=True)
         controller_port_thread.start()
         slave_port_thread.start()
 
@@ -156,7 +155,7 @@ class PortsController:
         while (self.listen and
                self.state.program_mode.value == ProgramModes.SNIFFER):
             rdata = self.state.input_serial.read_until(
-                    expected=Config.CR, size=Config.INPUT_SIZE)
+                expected=Config.CR, size=Config.INPUT_SIZE)
             if (not rdata):
                 continue
             self.add_transmission(TransmissionType.READ,
@@ -186,7 +185,7 @@ class PortsController:
             if (not self.responses.state.sniffer_stack):
                 continue
             self.responses.set_pair(
-                    self.responses.state.sniffer_stack.pop(0), rdata)
+                self.responses.state.sniffer_stack.pop(0), rdata)
 
     def add_transmission(self, ttype, port, data):
         t = Transmission.new(ttype, port, data)
