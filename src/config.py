@@ -24,7 +24,7 @@ class Config(ABC):
             "COLUMN": "A",
         },
         "RESPONSES": {
-            "TITLE": "Responses",
+            "TITLE": "Response",
             "COLUMN": "B",
         }
     }
