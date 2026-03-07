@@ -55,7 +55,7 @@ jobs:
       run: |
         # make a single-file Windows executable from the entry point
         # include custom icon file
-        pyinstaller --log-level WARN --onefile --windowed --name=servo_emulator --icon=./icon.ico --hidden-import=kivy_deps.angle --hidden-import=kivy_deps.glew --hidden-import=kivy_deps.sdl2 --collect-all kivy_deps.angle --collect-all kivy_deps.glew --collect-all kivy_deps.sdl2 --collect-all kivy --exclude-module kivy.lib.gstplayer src/main.py
+        pyinstaller --log-level WARN --onefile --windowed --name=servo_emulator --icon=./icon.ico --hidden-import=kivy_deps.angle --hidden-import=kivy_deps.glew --hidden-import=kivy_deps.sdl2 --collect-all kivy_deps.angle --collect-all kivy_deps.glew --collect-all kivy_deps.sdl2 --collect-all kivy --exclude-module kivy.lib.gstplayer --exclude-module kivy.garden src/main.py
     - name: Upload executable artifact
       uses: actions/upload-artifact@v4
       with:
