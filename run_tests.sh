@@ -4,14 +4,14 @@
 echo "Running Servo Emulator Test Suite..."
 echo ""
 
-# Check if venv exists
-if [ ! -d "venv" ]; then
-    echo "Error: Virtual environment not found. Please create it first."
-    exit 1
+# if venv exists use it otherwise fallback
+if [ -d "venv" ]; then
+    echo "Using virtual environment."
+    ./venv/Scripts/python.exe -m pytest tests/ -v --tb=short
+else
+    echo "Virtual environment not found, using system python."
+    python -m pytest tests/ -v --tb=short
 fi
-
-# Run tests with pytest
-./venv/Scripts/python.exe -m pytest tests/ -v --tb=short
 
 echo ""
 echo "Test run complete!"
