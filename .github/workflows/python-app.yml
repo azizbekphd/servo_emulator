@@ -40,7 +40,7 @@ jobs:
         # run the full test suite and generate coverage reports
         pytest tests/ --cov=src --cov-report=xml --cov-report=term
         # optionally, show a summary of the custom runner script
-        if (Test-Path run_tests.bat) {
+        if (Test-Path .\run_tests.bat) {
             Write-Host "Running helper script for sanity"
-            run_tests.bat
+            & .\run_tests.bat
         }
