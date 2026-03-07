@@ -50,10 +50,12 @@ jobs:
       run: |
         pip install pyinstaller
     - name: Build executable
+      env:
+        KIVY_GL_BACKEND: angle_sdl2
       run: |
         # make a single-file Windows executable from the entry point
         # include custom icon file
-        pyinstaller --onefile --name=servo_emulator --icon=./icon.ico src/main.py
+        pyinstaller --onefile --windowed --name=servo_emulator --icon=./icon.ico --hidden-import=kivy_deps.angle --hidden-import=kivy_deps.glew --hidden-import=kivy_deps.sdl2 src/main.py
     - name: Upload executable artifact
       uses: actions/upload-artifact@v4
       with:
