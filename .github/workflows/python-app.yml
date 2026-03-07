@@ -44,3 +44,18 @@ jobs:
             Write-Host "Running helper script for sanity"
             & .\run_tests.bat
         }
+    
+    # --- new steps for building an executable and uploading it as an artifact ---
+    - name: Install build tools
+      run: |
+        pip install pyinstaller
+    - name: Build executable
+      run: |
+        # make a single-file Windows executable from the entry point
+        pyinstaller --onefile --name=servo_emulator src/main.py
+    - name: Upload executable artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: servo_emulator
+        path: dist/servo_emulator.exe
+
