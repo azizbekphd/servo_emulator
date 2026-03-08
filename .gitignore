@@ -9,3 +9,6 @@ __pycache__/
 /settings
 *.xlsx
 build/
+dist/
+*.spec
+*.log
