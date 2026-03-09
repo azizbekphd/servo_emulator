@@ -3,7 +3,10 @@ import sys
 
 if hasattr(sys, '_MEIPASS'):
     os.environ['KIVY_NO_CONSOLELOG'] = '1'
-os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
+if sys.platform == 'win32':
+    os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
+else:
+    os.environ['KIVY_GL_BACKEND'] = 'gl'
 
 import kivy
 from kivy.base import EventLoop
@@ -13,7 +16,6 @@ from kivy.core.window import Window
 from kivy.app import App
 from ui.windows.main import MainScreen
 
-# os.environ['KIVY_GL_BACKEND'] = 'gl'
 kivy.require('2.1.0')
 EventLoop.ensure_window()
 KivyConfig.set('kivy', 'exit_on_escape', '0')

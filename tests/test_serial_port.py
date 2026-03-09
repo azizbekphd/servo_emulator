@@ -72,14 +72,12 @@ class TestSerialPort:
     def test_dsrdtr_default(self):
         """Test that dsrdtr defaults to False."""
         port = SerialPort()
-        # Note: SerialPort has a typo - the attribute is named dsrstr, not dsrdtr
-        assert port.dsrstr is False
+        assert port.dsrdtr is False
 
     def test_dsrdtr_enabled(self):
         """Test enabling dsrdtr parameter."""
         port = SerialPort(dsrdtr=True)
-        # Note: SerialPort has a typo - the attribute is named dsrstr, not dsrdtr
-        assert port.dsrstr is True
+        assert port.dsrdtr is True
 
     def test_inter_byte_timeout(self):
         """Test inter_byte_timeout attribute."""
@@ -116,8 +114,7 @@ class TestSerialPort:
         assert port.xonxoff is True
         assert port.rtscts is True
         assert port.write_timeout == 1.0
-        # Note: SerialPort has a typo - the attribute is named dsrstr, not dsrdtr
-        assert port.dsrstr is True
+        assert port.dsrdtr is True
         assert port.inter_byte_timeout == 0.05
         assert port.exclusive is True
 

@@ -5,6 +5,10 @@ from models.program_mode import ProgramMode, ProgramModes
 class Config(ABC):
 
     TIMEOUT = 1
+    BAUD_RATE = 9600
+    BAUD_RATES = [
+        1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200
+    ]
     CR = bytes([0x0D])
     ACK = bytes([0x06])
     INPUT_SIZE = 12

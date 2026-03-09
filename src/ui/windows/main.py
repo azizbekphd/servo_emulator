@@ -13,6 +13,9 @@ from controllers.responses import ResponsesController, \
 from utils.ports_list import PortsList
 from i18n.i18n import I18n
 
+
+i18n = I18n()
+
 Builder.load_string('''
 <LogsWidget>:
     viewclass: 'LogRow'
@@ -46,19 +49,24 @@ class MainScreen:
 
     def __program_mode_menu_on_release(self, program_mode):
         self.__program_mode_menu_button.text = program_mode.name if (
-            program_mode) else "Please, choose..."
+            program_mode) else i18n.en.please_choose
         self.ports.select_program_mode(program_mode)
+        return True
+
+    def __baud_rate_menu_on_release(self, baud_rate):
+        self.__baud_rate_menu_button.text = str(baud_rate)
+        self.ports.select_baud_rate(baud_rate)
         return True
 
     def __input_serial_menu_on_release(self, port):
         self.__input_serial_menu_button.text = port.name if (
-            port) else "Please, choose..."
+            port) else i18n.en.please_choose
         self.ports.select_input_port(port)
         return True
 
     def __output_serial_menu_on_release(self, port):
         self.__output_serial_menu_button.text = port.name if (
-            port) else "Please, choose..."
+            port) else i18n.en.please_choose
         self.ports.select_output_port(port)
         return True
 
@@ -70,7 +78,7 @@ class MainScreen:
         ports_control_grid = GridLayout()
         ports_control_grid.cols = 2
         ports_control_grid.spacing = [0, 8]
-        ports_control_grid.size_hint_max_y = 94
+        ports_control_grid.size_hint_max_y = 130
 
         self.responses.run()
         self.ports.run()
@@ -78,9 +86,9 @@ class MainScreen:
         ports_list = self.ports.state.ports if (ports_available) else []
 
         # Program mode
-        ports_control_grid.add_widget(Label(text="Program mode:"))
+        ports_control_grid.add_widget(Label(text=i18n.en.program_mode))
         button_text = self.ports.state.program_mode.name if (
-            self.ports.state.program_mode) else "Please, choose..."
+            self.ports.state.program_mode) else i18n.en.please_choose
         self.__program_mode_menu_button = Button(
             text=button_text, size_hint_max_y=35)
         self.__program_mode_menu = DropDown()
@@ -102,16 +110,36 @@ class MainScreen:
             self.__program_mode_menu_on_release(mode))
         ports_control_grid.add_widget(self.__program_mode_menu_button)
 
+        # Baud rate
+        ports_control_grid.add_widget(Label(text=i18n.en.baud_rate))
+        self.__baud_rate_menu_button = Button(
+            text=str(self.ports.state.baud_rate), size_hint_max_y=35)
+        self.__baud_rate_menu = DropDown()
+
+        for baud_rate in Config.BAUD_RATES:
+            baud_rate_menu_button = Button(
+                text=str(baud_rate), size_hint_y=None, height=30)
+            baud_rate_menu_button.bind(
+                on_release=lambda btn: self.__baud_rate_menu.select(int(btn.text)))
+            self.__baud_rate_menu.add_widget(baud_rate_menu_button)
+
+        self.__baud_rate_menu_button.bind(
+            on_release=self.__baud_rate_menu.open)
+        self.__baud_rate_menu.bind(
+            on_select=lambda _, baud:
+            self.__baud_rate_menu_on_release(baud))
+        ports_control_grid.add_widget(self.__baud_rate_menu_button)
+
         # Input port
         button_text = self.ports.state.input_port.name if (
-            self.ports.state.input_serial) else "Please, choose..."
+            self.ports.state.input_serial) else i18n.en.please_choose
         self.__input_serial_menu_button = Button(
             text=button_text, size_hint_max_y=35)
         self.__input_serial_menu = DropDown()
 
         # Output port
         button_text = self.ports.state.output_port.name if (
-            self.ports.state.output_serial) else "Please, choose..."
+            self.ports.state.output_serial) else i18n.en.please_choose
         self.__output_serial_menu_button = Button(
             text=button_text, size_hint_max_y=35)
         self.__output_serial_menu = DropDown()
@@ -137,11 +165,11 @@ class MainScreen:
                                                 ports_list, btn.text)))
                 self.__output_serial_menu.add_widget(output_menu_button)
         else:
-            self.__input_serial_menu_button.text = "No COM ports found"
-            self.__output_serial_menu_button.text = "No COM ports found"
+            self.__input_serial_menu_button.text = i18n.en.no_com_ports_found
+            self.__output_serial_menu_button.text = i18n.en.no_com_ports_found
 
         # Input port
-        ports_control_grid.add_widget(Label(text="Input COM port:"))
+        ports_control_grid.add_widget(Label(text=i18n.en.input_com_port))
         self.__input_serial_menu_button.bind(
             on_release=self.__input_serial_menu.open)
         self.__input_serial_menu.bind(
@@ -150,7 +178,7 @@ class MainScreen:
         ports_control_grid.add_widget(self.__input_serial_menu_button)
 
         # Output port
-        ports_control_grid.add_widget(Label(text="Output COM port:"))
+        ports_control_grid.add_widget(Label(text=i18n.en.output_com_port))
         self.__output_serial_menu_button.bind(
             on_release=self.__output_serial_menu.open)
         self.__output_serial_menu.bind(

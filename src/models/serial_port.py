@@ -16,7 +16,7 @@ class SerialPort:
         self.xonxoff = xonxoff
         self.rtscts = rtscts
         self.write_timeout = write_timeout
-        self.dsrstr = dsrdtr
+        self.dsrdtr = dsrdtr
         self.inter_byte_timeout = inter_byte_timeout
         self.exclusive = exclusive
 

@@ -29,18 +29,21 @@ class ResponsesController:
         filename = config["FILENAME"]
 
         if (os.path.isfile(filename)):
-            self.state.workbook = load_workbook(filename)
-            sheet = self.state.workbook.active
-            index = config["START_ROW"]
-            while True:
-                req = sheet[config["REQUESTS"]["COLUMN"]
-                            + str(index)].value
-                res = sheet[config["RESPONSES"]["COLUMN"]
-                            + str(index)].value
-                if (not (req and res)):
-                    break
-                self.state.request_response_pairs[str(req)] = str(res)
-                index += 1
+            try:
+                self.state.workbook = load_workbook(filename)
+                sheet = self.state.workbook.active
+                index = config["START_ROW"]
+                while True:
+                    req = sheet[config["REQUESTS"]["COLUMN"]
+                                + str(index)].value
+                    res = sheet[config["RESPONSES"]["COLUMN"]
+                                + str(index)].value
+                    if (not (req and res)):
+                        break
+                    self.state.request_response_pairs[str(req)] = str(res)
+                    index += 1
+            except Exception as e:
+                print(f"Error loading Excel file: {e}")
         return True
 
     def set_pair(self, req, res):
@@ -63,17 +66,21 @@ class ResponsesController:
         config = self.state.config
         filename = config["FILENAME"]
 
-        self.state.workbook = Workbook()
-        sheet = self.state.workbook.active
-        req_column = config["REQUESTS"]["COLUMN"]
-        res_column = config["RESPONSES"]["COLUMN"]
-        sheet[req_column + "1"] = config["REQUESTS"]["TITLE"]
-        sheet[res_column + "1"] = config["RESPONSES"]["TITLE"]
+        try:
+            self.state.workbook = Workbook()
+            sheet = self.state.workbook.active
+            req_column = config["REQUESTS"]["COLUMN"]
+            res_column = config["RESPONSES"]["COLUMN"]
+            sheet[req_column + "1"] = config["REQUESTS"]["TITLE"]
+            sheet[res_column + "1"] = config["RESPONSES"]["TITLE"]
 
-        index = config["START_ROW"]
-        for req, res in self.state.request_response_pairs.items():
-            sheet[req_column + str(index)] = req
-            sheet[res_column + str(index)] = res
-            index += 1
+            index = config["START_ROW"]
+            for req, res in self.state.request_response_pairs.items():
+                sheet[req_column + str(index)] = req
+                sheet[res_column + str(index)] = res
+                index += 1
 
-        self.state.workbook.save(filename)
+            self.state.workbook.save(filename)
+            print(f"Successfully saved request-response pairs to {os.path.abspath(filename)}")
+        except Exception as e:
+            print(f"Error saving Excel file: {e}")
